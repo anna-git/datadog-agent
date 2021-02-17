@@ -135,22 +135,29 @@ def load_targets(ctx, targethash, selections):
     returnlist = []
     commentpattern = re.compile("^comment")
     for selection in selections.split(","):
-        selectionpattern = re.compile(selection)
-        
+        selectionpattern = re.compile("^{}$".format(selection))
+
         for key in targethash:
             if commentpattern.match(key):
                 continue
             if selectionpattern.search(key):
-                returnlist.append(key)
+                if key not in returnlist:
+                    returnlist.append(key) 
+
     return returnlist
 
 def load_user_env(ctx, provider, varsfile):
     env = {}
+    commentpattern = re.compile("^comment")
     if os.path.exists(varsfile):
         with open("uservars.json", "r") as f:
             vars = json.load(f)
             for key, val in vars['global'].items():
+                if commentpattern.match(key):
+                    continue
                 env[key] = val
             for key, val in vars[provider].items():
+                if commentpattern.match(key):
+                    continue
                 env[key] = val
     return env
